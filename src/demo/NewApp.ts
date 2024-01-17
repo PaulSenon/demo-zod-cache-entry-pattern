@@ -5,10 +5,10 @@ import Toto from "./Services/Toto";
 export default class NewApp {
   async load() {
     const adobe = await Truc.get(Adobe);
-    adobe.trackPageView();
+    adobe?.trackPageView();
 
     const toto = await Truc.get(Toto);
-    toto.doSomething();
+    toto?.doSomething();
   }
 
   // async reload() {

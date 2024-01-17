@@ -1,4 +1,5 @@
 import IResettableService from "../Core/IResettableService";
+import IResolveDependencies from "../Core/IResolveDependencies";
 import IService from "../Core/IService";
 import Truc from "../Core/Truc";
 import Adobe from "./Adobe";
@@ -15,14 +16,18 @@ declare global {
   }
 }
 
-export default class Toto implements IService {
+export default class Toto implements IService, IResolveDependencies {
   private sdk?: any;
   private adobe?: Adobe;
+
+  async resolveDependencies() {
+    this.adobe = await Truc.get(Adobe);
+  }
 
   async init() {
     // ...
     this.sdk = await this.loadSDK();
-    this.adobe = await Truc.get(Adobe);
+    this.adobe?.sendEvent("toto-init", {});
     // ...
   }
 
@@ -38,5 +43,6 @@ export default class Toto implements IService {
 
   doSomething() {
     this.sdk?.somethingReallyInteresting();
+    this.adobe?.sendEvent("toto-something", {});
   }
 }

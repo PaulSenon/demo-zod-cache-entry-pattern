@@ -1,3 +1,4 @@
+import { isIResolveDependencies } from "./IResolveDependencies";
 import IService from "./IService";
 
 type ServiceClass<T extends IService> = { new (): T };
@@ -14,7 +15,13 @@ class Truc {
     const instance = new Class();
 
     // 3) (optional) resolve dependencies
-    // TODO: how ???
+    if (isIResolveDependencies(instance)) {
+      try {
+        await instance.resolveDependencies();
+      } catch (e) {
+        console.warn(`Failed to resolve dependencies for ${Class.name}`);
+      }
+    }
 
     // 4) Initialize the service
     try {
