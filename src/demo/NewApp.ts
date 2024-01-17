@@ -1,17 +1,21 @@
 import Truc from "./Core/Truc";
 
-export const totoLoader = () => import("./Services/Toto");
-export const adobeLoader = () => import("./Services/Adobe");
+const config = {
+  adobe: () => import("./Services/Adobe"),
+  toto: () => import("./Services/Toto"),
+};
+
+export const AppContainer = new Truc(config);
 export default class NewApp {
   async load() {
-    const adobe = await Truc.get(adobeLoader);
+    const adobe = await AppContainer.get("adobe");
     adobe?.trackPageView();
 
-    const toto = await Truc.get(totoLoader);
+    const toto = await AppContainer.get("toto");
     toto?.doSomething();
   }
 
   async reload() {
-    await Truc.reset(totoLoader);
+    await AppContainer.reset("adobe");
   }
 }
