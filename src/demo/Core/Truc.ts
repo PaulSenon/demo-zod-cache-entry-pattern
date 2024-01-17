@@ -6,6 +6,7 @@ import { isAbstractLoggable } from "./Logger/AbstractLoggable";
 import ILoggerFactory from "./Logger/ILoggerFactory";
 import ILogger from "./Logger/ILogger";
 import IActiveChecker from "./ActiveChecker/IActiveChecker";
+import { isIIsEnabled } from "./IIsEnabled";
 
 export type ServiceClass<T extends IService> = { new (): T };
 
@@ -53,7 +54,7 @@ export default class Truc<const Config extends BaseConfig> {
     const cachedInstance = this.getFromCache(key);
     if (cachedInstance) return cachedInstance as T;
 
-    // 2) Check if the service is active
+    // 2) Check if the service key is enabled
     if (!(await this.activeServiceChecker.isActive(key))) {
       this.logger.debug(`Service ${key} is not active`);
       return undefined;
@@ -68,13 +69,19 @@ export default class Truc<const Config extends BaseConfig> {
     // 5) Instantiate the service
     const instance = new Class() as T;
 
-    // 6) (optional) set logger
+    // 6) (optional) check if the service instance is enabled
+    if (isIIsEnabled(instance) && !(await instance.isEnabled())) {
+      this.logger.debug(`Service ${key} is not enabled`);
+      return undefined;
+    }
+
+    // 7) (optional) set logger
     if (isAbstractLoggable(instance)) {
       const logger = this.loggerFactory.getLogger(key);
       instance.setLogger(logger);
     }
 
-    // 7) (optional) resolve dependencies
+    // 8) (optional) resolve dependencies
     if (isIResolveDependencies(instance)) {
       try {
         await instance.resolveDependencies();
@@ -83,17 +90,17 @@ export default class Truc<const Config extends BaseConfig> {
       }
     }
 
-    // 8) Initialize the service
+    // 9) Initialize the service
     try {
       await instance.init();
     } catch (e) {
       return undefined;
     }
 
-    // 9) Cache the service
+    // 10) Cache the service
     this.setInCache(key, instance);
 
-    // 10) Return the initialized service instance
+    // 11) Return the initialized service instance
     return instance;
   }
 
