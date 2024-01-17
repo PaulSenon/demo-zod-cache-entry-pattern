@@ -1,5 +1,6 @@
 import IResolveDependencies from "../Core/IResolveDependencies";
 import IService from "../Core/IService";
+import AbstractLoggable from "../Core/Logger/AbstractLoggable";
 import Truc from "../Core/Truc";
 import { AppContainer } from "../NewApp";
 import type Adobe from "./Adobe";
@@ -16,7 +17,7 @@ declare global {
   }
 }
 
-export default class Toto implements IService, IResolveDependencies {
+export default class Toto extends AbstractLoggable implements IService, IResolveDependencies {
   private sdk?: any;
   private adobe?: Adobe;
 
@@ -42,6 +43,7 @@ export default class Toto implements IService, IResolveDependencies {
   }
 
   doSomething() {
+    this.logger.debug("Doing something really interesting");
     this.sdk?.somethingReallyInteresting();
     this.adobe?.sendEvent("toto-something", {});
   }

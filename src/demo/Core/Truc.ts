@@ -2,6 +2,9 @@ import DependencyGraph from "./DependencyGraph";
 import IResettableService, { isIResettableService } from "./IResettableService";
 import { isIResolveDependencies } from "./IResolveDependencies";
 import IService from "./IService";
+import { isAbstractLoggable } from "./Logger/AbstractLoggable";
+import ILoggerFactory from "./Logger/ILoggerFactory";
+import ILogger from "./Logger/ILogger";
 
 export type ServiceClass<T extends IService> = { new (): T };
 
@@ -22,15 +25,22 @@ export type ConfigKeysExcludingType<C extends BaseConfig, T> = {
 
 export type ConfigExcludingType<C extends BaseConfig, T> = Pick<C, ConfigKeysExcludingType<C, T>>;
 
-export type RootKey = "root";
+const RootKey = "root";
+export type RootKey = typeof RootKey;
 
 export default class Truc<const Config extends BaseConfig> {
   private services: Map<keyof Config, IService> = new Map();
   private dependencyGraph = new DependencyGraph(this);
+  private logger: ILogger;
 
-  constructor(private config: Config) {}
+  constructor(
+    private config: Config,
+    private loggerFactory: ILoggerFactory
+  ) {
+    this.logger = loggerFactory.getLogger(RootKey);
+  }
 
-  async get<const Key extends keyof Config, const T extends LoadedType<Config[Key]>>(
+  async get<const Key extends keyof Config & string, const T extends LoadedType<Config[Key]>>(
     key: Key,
     parent?: IService
   ): Promise<T | undefined> {
@@ -50,26 +60,32 @@ export default class Truc<const Config extends BaseConfig> {
     // 4) Instantiate the service
     const instance = new Class() as T;
 
-    // 5) (optional) resolve dependencies
+    // 5) (optional) set logger
+    if (isAbstractLoggable(instance)) {
+      const logger = this.loggerFactory.getLogger(key);
+      instance.setLogger(logger);
+    }
+
+    // 6) (optional) resolve dependencies
     if (isIResolveDependencies(instance)) {
       try {
         await instance.resolveDependencies();
       } catch (e) {
-        console.warn(`Failed to resolve dependencies for ${Class.name}`);
+        this.logger.warn(`Failed to resolve dependencies for ${Class.name}`);
       }
     }
 
-    // 6) Initialize the service
+    // 7) Initialize the service
     try {
       await instance.init();
     } catch (e) {
       return undefined;
     }
 
-    // 7) Cache the service
+    // 8) Cache the service
     this.setInCache(key, instance);
 
-    // 8) Return the initialized service instance
+    // 9) Return the initialized service instance
     return instance;
   }
 
@@ -79,7 +95,7 @@ export default class Truc<const Config extends BaseConfig> {
     // 1) Check if the is already in cache (aka has been initialized)
     const instance = this.getFromCache(_key);
     if (!instance) {
-      console.warn(`Cannot reset an service that has not been initialized yet`);
+      this.logger.warn(`Cannot reset an service that has not been initialized yet`);
       return;
     }
 

@@ -1,11 +1,15 @@
+import LoggerFactory from "./Core/Logger/LoggerFactory";
 import Truc from "./Core/Truc";
+import ConsoleLogger from "./Services/Logger/ConsoleLogger";
 
 const config = {
   adobe: () => import("./Services/Adobe"),
   toto: () => import("./Services/Toto"),
 };
 
-export const AppContainer = new Truc(config);
+const loggerFactory = new LoggerFactory(ConsoleLogger);
+
+export const AppContainer = new Truc(config, loggerFactory);
 export default class NewApp {
   async load() {
     const adobe = await AppContainer.get("adobe");
