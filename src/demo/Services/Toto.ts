@@ -1,3 +1,5 @@
+import IService from "../Core/IService";
+
 const SDK_URL = "https://sdktoto.com/sdk.js";
 
 type TotoSDK = {
@@ -10,7 +12,7 @@ declare global {
   }
 }
 
-export default class Toto {
+export default class Toto implements IService {
   private sdk?: any;
 
   async init() {

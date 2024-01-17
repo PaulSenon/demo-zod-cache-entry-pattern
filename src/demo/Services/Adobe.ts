@@ -1,3 +1,5 @@
+import IService from "../Core/IService";
+
 const SDL_URL = "https://assets.adobedtm.com/launch-ENf1b4f4b9a0d34c0e9b2a2d5b5b2f5b8e.min.js";
 
 type AdobeSDK = {
@@ -11,7 +13,7 @@ declare global {
   }
 }
 
-export default class Adobe {
+export default class Adobe implements IService {
   private adobeSDK?: AdobeSDK;
 
   async init() {
