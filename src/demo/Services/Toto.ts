@@ -1,8 +1,8 @@
-import IResettableService from "../Core/IResettableService";
 import IResolveDependencies from "../Core/IResolveDependencies";
 import IService from "../Core/IService";
 import Truc from "../Core/Truc";
-import Adobe from "./Adobe";
+import { adobeLoader } from "../NewApp";
+import type Adobe from "./Adobe";
 
 const SDK_URL = "https://sdktoto.com/sdk.js";
 
@@ -21,7 +21,7 @@ export default class Toto implements IService, IResolveDependencies {
   private adobe?: Adobe;
 
   async resolveDependencies() {
-    this.adobe = await Truc.get(Adobe, this);
+    this.adobe = await Truc.get(adobeLoader, this);
   }
 
   async init() {

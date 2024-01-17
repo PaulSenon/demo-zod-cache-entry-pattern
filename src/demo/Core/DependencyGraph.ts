@@ -1,10 +1,10 @@
 import IService from "./IService";
-import Truc, { ServiceClass } from "./Truc";
+import Truc, { Loader, ServiceClass } from "./Truc";
 
 export default class DependencyGraph {
-  private dependencyGraph: Map<IService | typeof Truc, Set<ServiceClass<IService>>> = new Map();
+  private dependencyGraph: Map<IService | typeof Truc, Set<Loader<IService>>> = new Map();
 
-  public addDependency(parent: IService | typeof Truc, child: ServiceClass<IService>) {
+  public addDependency(parent: IService | typeof Truc, child: Loader<IService>) {
     const children = this.dependencyGraph.get(parent);
     if (children) {
       children.add(child);
@@ -13,7 +13,7 @@ export default class DependencyGraph {
     }
   }
 
-  public getChildren(parent: IService | typeof Truc): ServiceClass<IService>[] {
+  public getChildren(parent: IService | typeof Truc): Loader<IService>[] {
     const children = this.dependencyGraph.get(parent);
     if (children) {
       return Array.from(children);
