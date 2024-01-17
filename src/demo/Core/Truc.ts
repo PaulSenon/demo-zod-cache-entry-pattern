@@ -5,6 +5,7 @@ import IService from "./IService";
 import { isAbstractLoggable } from "./Logger/AbstractLoggable";
 import ILoggerFactory from "./Logger/ILoggerFactory";
 import ILogger from "./Logger/ILogger";
+import IActiveChecker from "./ActiveChecker/IActiveChecker";
 
 export type ServiceClass<T extends IService> = { new (): T };
 
@@ -35,7 +36,8 @@ export default class Truc<const Config extends BaseConfig> {
 
   constructor(
     private config: Config,
-    private loggerFactory: ILoggerFactory
+    private loggerFactory: ILoggerFactory,
+    private activeServiceChecker: IActiveChecker
   ) {
     this.logger = loggerFactory.getLogger(RootKey);
   }
@@ -51,22 +53,28 @@ export default class Truc<const Config extends BaseConfig> {
     const cachedInstance = this.getFromCache(key);
     if (cachedInstance) return cachedInstance as T;
 
-    // 2) get loader from config
+    // 2) Check if the service is active
+    if (!(await this.activeServiceChecker.isActive(key))) {
+      this.logger.debug(`Service ${key} is not active`);
+      return undefined;
+    }
+
+    // 3) get loader from config
     const loader = this.config[key];
 
-    // 3) Load the service
+    // 4) Load the service
     const { default: Class } = await loader();
 
-    // 4) Instantiate the service
+    // 5) Instantiate the service
     const instance = new Class() as T;
 
-    // 5) (optional) set logger
+    // 6) (optional) set logger
     if (isAbstractLoggable(instance)) {
       const logger = this.loggerFactory.getLogger(key);
       instance.setLogger(logger);
     }
 
-    // 6) (optional) resolve dependencies
+    // 7) (optional) resolve dependencies
     if (isIResolveDependencies(instance)) {
       try {
         await instance.resolveDependencies();
@@ -75,17 +83,17 @@ export default class Truc<const Config extends BaseConfig> {
       }
     }
 
-    // 7) Initialize the service
+    // 8) Initialize the service
     try {
       await instance.init();
     } catch (e) {
       return undefined;
     }
 
-    // 8) Cache the service
+    // 9) Cache the service
     this.setInCache(key, instance);
 
-    // 9) Return the initialized service instance
+    // 10) Return the initialized service instance
     return instance;
   }
 
