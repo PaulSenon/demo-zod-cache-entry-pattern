@@ -1,20 +1,20 @@
+import Truc from "./Core/Truc";
 import Adobe from "./Services/Adobe";
 import Toto from "./Services/Toto";
 
 export default class NewApp {
-  private adobe = new Adobe();
-  private toto = new Toto();
+  private truc = new Truc();
 
   async load() {
-    await this.adobe.init();
-    this.adobe.trackPageView();
+    const adobe = await this.truc.get(Adobe);
+    adobe.trackPageView();
 
-    await this.toto.init();
-    this.toto.doSomething();
+    const toto = await this.truc.get(Toto);
+    toto.doSomething();
   }
 
-  async reload() {
-    this.adobe.sendEvent("reload", {});
-    this.toto.doSomething();
-  }
+  // async reload() {
+  //   this.adobe.sendEvent("reload", {});
+  //   this.toto.doSomething();
+  // }
 }

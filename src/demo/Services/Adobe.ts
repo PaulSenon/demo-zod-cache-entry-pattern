@@ -1,4 +1,4 @@
-import IService from "../Core/IService";
+import IResettableService from "../Core/IResettableService";
 
 const SDL_URL = "https://assets.adobedtm.com/launch-ENf1b4f4b9a0d34c0e9b2a2d5b5b2f5b8e.min.js";
 
@@ -13,11 +13,16 @@ declare global {
   }
 }
 
-export default class Adobe implements IService {
+export default class Adobe implements IResettableService {
   private adobeSDK?: AdobeSDK;
 
   async init() {
     this.adobeSDK = await this.loadSDK();
+    this.trackPageView();
+  }
+
+  async reset() {
+    this.sendEvent("reload", {});
   }
 
   private loadSDK(): Promise<any> {

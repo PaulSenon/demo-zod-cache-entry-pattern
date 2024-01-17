@@ -1,3 +1,4 @@
+import IResettableService from "../Core/IResettableService";
 import IService from "../Core/IService";
 
 const SDK_URL = "https://sdktoto.com/sdk.js";
@@ -17,6 +18,7 @@ export default class Toto implements IService {
 
   async init() {
     this.sdk = await this.loadSDK();
+    this.doSomething();
   }
 
   private loadSDK(): Promise<any> {
