@@ -11,6 +11,8 @@ export default class NewApp {
 
     const toto = await this.truc.get(Toto);
     toto.doSomething();
+
+    const adobe2 = await this.truc.get(Adobe);
   }
 
   // async reload() {
