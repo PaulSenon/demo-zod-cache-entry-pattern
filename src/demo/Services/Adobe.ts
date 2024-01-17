@@ -17,12 +17,13 @@ export default class Adobe implements IResettableService {
   private adobeSDK?: AdobeSDK;
 
   async init() {
+    // ...
     this.adobeSDK = await this.loadSDK();
-    this.trackPageView();
+    // ...
   }
 
   async reset() {
-    this.sendEvent("reload", {});
+    // ...
   }
 
   private loadSDK(): Promise<any> {

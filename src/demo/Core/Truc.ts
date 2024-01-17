@@ -2,10 +2,10 @@ import IService from "./IService";
 
 type ServiceClass<T extends IService> = { new (): T };
 
-export default class Truc {
+class Truc {
   private services: Map<ServiceClass<IService>, IService> = new Map();
 
-  async get<T extends IService>(Class: ServiceClass<T>): Promise<T> {
+  async get<T extends IService>(Class: ServiceClass<T>): Promise<T | undefined> {
     // 1) Check if the service is already in cache
     const cachedInstance = this.getFromCache(Class);
     if (cachedInstance) return cachedInstance as T;
@@ -13,13 +13,20 @@ export default class Truc {
     // 2) Instantiate the service
     const instance = new Class();
 
-    // 3) Initialize the service
-    await instance.init();
+    // 3) (optional) resolve dependencies
+    // TODO: how ???
 
-    // 4) Cache the service
+    // 4) Initialize the service
+    try {
+      await instance.init();
+    } catch (e) {
+      return undefined;
+    }
+
+    // 5) Cache the service
     this.setInCache(Class, instance);
 
-    // 5) Return the initialized service instance
+    // 6) Return the initialized service instance
     return instance;
   }
 
@@ -33,3 +40,5 @@ export default class Truc {
     this.services.set(Class, instance);
   }
 }
+
+export default new Truc(); // Singleton

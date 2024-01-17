@@ -3,16 +3,12 @@ import Adobe from "./Services/Adobe";
 import Toto from "./Services/Toto";
 
 export default class NewApp {
-  private truc = new Truc();
-
   async load() {
-    const adobe = await this.truc.get(Adobe);
+    const adobe = await Truc.get(Adobe);
     adobe.trackPageView();
 
-    const toto = await this.truc.get(Toto);
+    const toto = await Truc.get(Toto);
     toto.doSomething();
-
-    const adobe2 = await this.truc.get(Adobe);
   }
 
   // async reload() {
