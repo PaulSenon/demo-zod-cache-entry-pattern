@@ -1,3 +1,5 @@
+import IResettableService from "./Core/IResettableService";
+import IService from "./Core/IService";
 import Truc from "./Core/Truc";
 import Adobe from "./Services/Adobe";
 import Toto from "./Services/Toto";
@@ -11,8 +13,7 @@ export default class NewApp {
     toto?.doSomething();
   }
 
-  // async reload() {
-  //   this.adobe.sendEvent("reload", {});
-  //   this.toto.doSomething();
-  // }
+  async reload() {
+    await Truc.reset(Toto);
+  }
 }

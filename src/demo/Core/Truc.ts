@@ -1,15 +1,24 @@
+import DependencyGraph from "./DependencyGraph";
+import { isIResettableService } from "./IResettableService";
 import { isIResolveDependencies } from "./IResolveDependencies";
 import IService from "./IService";
 
-type ServiceClass<T extends IService> = { new (): T };
+export type ServiceClass<T extends IService> = { new (): T };
 
 class Truc {
   private services: Map<ServiceClass<IService>, IService> = new Map();
+  private dependencyGraph = new DependencyGraph();
 
-  async get<T extends IService>(Class: ServiceClass<T>): Promise<T | undefined> {
+  async get<T extends IService>(Class: ServiceClass<T>, parent: IService | Truc = this): Promise<T | undefined> {
+    // 0) Add dependency graph entry
+    this.dependencyGraph.addDependency(parent, Class);
+
     // 1) Check if the service is already in cache
     const cachedInstance = this.getFromCache(Class);
-    if (cachedInstance) return cachedInstance as T;
+    if (cachedInstance) {
+      // set dependency graph entry
+      return cachedInstance as T;
+    }
 
     // 2) Instantiate the service
     const instance = new Class();
@@ -35,6 +44,26 @@ class Truc {
 
     // 6) Return the initialized service instance
     return instance;
+  }
+
+  async reset<T extends IService>(Class: ServiceClass<T>): Promise<void> {
+    // 1) Check if the is already in cache (aka has been initialized)
+    const instance = this.getFromCache(Class);
+    if (!instance) {
+      console.warn(`Cannot reset an service that has not been initialized yet ${Class.name}`);
+      return;
+    }
+
+    // 2) Reset children recursively
+    const children = this.dependencyGraph.getChildren(instance);
+    for (const child of children) {
+      await this.reset(child);
+    }
+
+    // 3) Reset the service if it is resettable
+    if (isIResettableService(instance)) {
+      await instance.reset();
+    }
   }
 
   private getFromCache<T extends IService>(Class: ServiceClass<T>): T | undefined {

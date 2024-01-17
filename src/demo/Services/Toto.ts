@@ -21,7 +21,7 @@ export default class Toto implements IService, IResolveDependencies {
   private adobe?: Adobe;
 
   async resolveDependencies() {
-    this.adobe = await Truc.get(Adobe);
+    this.adobe = await Truc.get(Adobe, this);
   }
 
   async init() {
